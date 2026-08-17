@@ -4,7 +4,7 @@
 
 Your links, in your control.
 
-链匣 LinkVault 是一个按 PHP 8.5 编写的自用短链接服务，无需 Composer，使用 SQLite 保存数据。仓库名为 `LinkVault`。
+链匣 LinkVault 是一个按 PHP 8.5 编写的自用短链接服务，无需 Composer，使用 SQLite 保存数据。
 
 ## 环境要求
 
