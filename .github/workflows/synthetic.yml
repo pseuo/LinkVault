@@ -1,0 +1,29 @@
+name: LinkVault synthetic monitoring
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      BASE_URL: ${{ secrets.SYNTHETIC_BASE_URL }}
+      CANARY_SLUG: ${{ vars.SYNTHETIC_CANARY_SLUG || 'monitor-canary' }}
+      CANARY_TARGET_URL: ${{ secrets.SYNTHETIC_CANARY_TARGET_URL }}
+    steps:
+      - name: Validate configuration
+        run: test -n "$BASE_URL" && test -n "$CANARY_TARGET_URL"
+      - name: Probe homepage
+        run: curl --fail --silent --show-error --max-time 15 "$BASE_URL/" | grep -F '<h1 id="home-title">链匣 LinkVault</h1>'
+      - name: Probe login form
+        run: curl --fail --silent --show-error --max-time 15 "$BASE_URL/login" | grep -F 'name="password"'
+      - name: Probe canary redirect
+        run: |
+          location="$(curl --head --silent --show-error --max-time 15 "$BASE_URL/$CANARY_SLUG" | sed -n 's/^[Ll]ocation: *\(.*\)\r$/\1/p')"
+          test "$location" = "$CANARY_TARGET_URL"

@@ -1,0 +1,33 @@
+# Application runtime data, databases, logs, backups, and report caches.
+/data/
+/backups/
+/restore-drill/
+
+# Generated release packages and dependencies.
+/build/
+/vendor/
+/node_modules/
+
+# Local configuration and secrets.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Test and static-analysis output.
+/test-results/
+/playwright-report/
+coverage/
+/.coverage
+/.phpunit.cache/
+/.phpstan-cache/
+/.psalm/
+
+# Editor and operating-system files.
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

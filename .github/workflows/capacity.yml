@@ -1,0 +1,28 @@
+name: Capacity
+
+on:
+  workflow_dispatch:
+    inputs:
+      rps:
+        description: Redirect requests per second
+        required: true
+        default: '100'
+      duration:
+        description: Test duration
+        required: true
+        default: 2m
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - uses: grafana/run-k6-action@v1
+        env:
+          BASE_URL: ${{ secrets.CAPACITY_BASE_URL }}
+          SLUG: ${{ secrets.CAPACITY_SLUG }}
+          RPS: ${{ inputs.rps }}
+          DURATION: ${{ inputs.duration }}
+        with:
+          path: tests/capacity.js

@@ -1,0 +1,10 @@
+[Unit]
+Description=Clean expired LinkVault operational data daily
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 UTC
+Persistent=true
+Unit=linkvault-data-cleanup.service
+
+[Install]
+WantedBy=timers.target

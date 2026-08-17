@@ -1,0 +1,55 @@
+{
+    "name": "linkvault/linkvault",
+    "description": "Development tooling for LinkVault",
+    "license": "proprietary",
+    "type": "project",
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "vimeo/psalm": "^6.0"
+    },
+    "scripts": {
+        "build:assets": "php bin/build-assets.php",
+        "check:migrations": "php bin/check-migrations.php",
+        "build:release": "php bin/build-release.php",
+        "scan:release": "php bin/scan-release.php",
+        "lint": "find app bin lib public templates tests -name '*.php' -print0 | xargs -0 -n1 php -l",
+        "analyse:phpstan": "phpstan analyse --memory-limit=1G",
+        "analyse:psalm": "psalm --no-cache",
+        "test:smoke": "php tests/smoke.php",
+        "test:coverage": "php bin/check-coverage.php --min=20",
+        "test:performance:smoke": "php tests/performance/benchmark.php --sizes=1000 --iterations=2 --analytics-rows=1000",
+        "test:independent": [
+            "php tests/http_endpoint_monitor.php",
+            "php tests/deployment_config.php",
+            "php tests/deployment_domains.php",
+            "php tests/privacy_logging.php",
+            "php tests/database_performance.php",
+            "php tests/performance_report.php",
+            "php tests/webhook.php",
+            "php tests/target_health.php",
+            "php tests/api_token_usage.php",
+            "php tests/retention_batches.php",
+            "php tests/analytics_boundaries.php",
+            "php tests/analytics_report_cache.php",
+            "php tests/business_summary.php",
+            "php tests/access_controls.php",
+            "php tests/operations_integrity.php",
+            "php tests/prometheus_metrics.php",
+            "php tests/domains_lifecycle.php",
+            "php tests/workflow_extensions.php",
+            "php tests/report_host_association.php",
+            "php tests/p2_capabilities.php"
+        ],
+        "check": [
+            "@check:migrations",
+            "@analyse:phpstan",
+            "@analyse:psalm",
+            "@test:independent",
+            "@test:smoke"
+        ]
+    },
+    "config": {
+        "process-timeout": 600,
+        "sort-packages": true
+    }
+}

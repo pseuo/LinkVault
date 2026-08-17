@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the LinkVault restore drill weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 04:30:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=linkvault-restore-drill.service
+
+[Install]
+WantedBy=timers.target

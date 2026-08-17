@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-title-key="settingsTitle">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LinkVault Extension Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="brand-mark" aria-hidden="true">LV</div>
+      <div>
+        <h1 data-i18n="extension">LinkVault extension</h1>
+        <p data-i18n="connectionAndDefaults">Connection and save defaults</p>
+      </div>
+      <label class="language-control" for="language"><span data-i18n="language">Language</span><select id="language" data-language-select><option value="en">English</option><option value="zh">中文</option></select></label>
+    </header>
+
+    <form id="settings-form">
+      <section aria-labelledby="connection-heading">
+        <h2 id="connection-heading" data-i18n="connection">Connection</h2>
+        <label for="service-url" data-i18n="serviceUrl">Service URL</label>
+        <input id="service-url" type="url" required placeholder="https://links.example.com" spellcheck="false">
+        <p class="hint" data-i18n="serviceUrlHint">Use the LinkVault base URL, including any deployment subpath.</p>
+
+        <label for="token" data-i18n="bearerToken">Bearer token</label>
+        <input id="token" type="password" required autocomplete="off" spellcheck="false">
+        <p class="hint" data-i18n="tokenHint">The token must have the <code>links:create</code> scope.</p>
+      </section>
+
+      <section aria-labelledby="defaults-heading">
+        <h2 id="defaults-heading" data-i18n="saveDefaults">Save defaults</h2>
+        <label for="default-tags"><span data-i18n="defaultTags">Default tags</span> <span data-i18n="onePerLine">one per line</span></label>
+        <textarea id="default-tags" rows="5" spellcheck="false" placeholder="reading-list&#10;browser"></textarea>
+
+        <label class="check-row" for="reuse-duplicates">
+          <input id="reuse-duplicates" type="checkbox">
+          <span>
+            <strong data-i18n="reuseDuplicates">Reuse duplicate links</strong>
+            <small data-i18n="reuseDuplicatesHint">Return the existing active short link when this URL is already saved.</small>
+          </span>
+        </label>
+      </section>
+
+      <section aria-labelledby="tagging-heading">
+        <h2 id="tagging-heading" data-i18n="automaticTags">Automatic tags</h2>
+        <label class="check-row" for="auto-tag-domain">
+          <input id="auto-tag-domain" type="checkbox">
+          <span><strong data-i18n="tagDomain">Tag with the domain</strong><small data-i18n="tagDomainHint">For example, save <code>www.example.com</code> with <code>example.com</code>.</small></span>
+        </label>
+        <label class="check-row" for="auto-tag-parameters">
+          <input id="auto-tag-parameters" type="checkbox">
+          <span><strong data-i18n="tagParameters">Tag common URL parameters</strong><small data-i18n="tagParametersHint">Add source, medium, campaign, ref, and similar values when present.</small></span>
+        </label>
+        <label for="tag-rules"><span data-i18n="customRules">Custom rules</span> <span>JSON</span></label>
+        <textarea id="tag-rules" rows="10" spellcheck="false" aria-describedby="tag-rules-hint">[]</textarea>
+        <p id="tag-rules-hint" class="hint" data-i18n="customRulesHint">Each rule has <code>match</code> fields (<code>host</code>, <code>title</code>, <code>url</code>, or <code>param</code>) and a <code>tags</code> array. Example: <code>[{"match":{"host":"github.com"},"tags":["code"]}]</code>.</p>
+      </section>
+
+      <div class="actions">
+        <button id="save-settings" type="submit" data-i18n="saveSettings">Save settings</button>
+        <p id="status" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </main>
+  <script src="i18n.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

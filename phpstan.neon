@@ -1,0 +1,9 @@
+parameters:
+    level: 5
+    tmpDir: %currentWorkingDirectory%/.phpstan-cache
+    paths:
+        - app
+        - bin
+        - lib
+        - public
+    treatPhpDocTypesAsCertain: false

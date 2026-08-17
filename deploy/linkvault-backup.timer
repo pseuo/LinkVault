@@ -1,0 +1,10 @@
+[Unit]
+Description=Run LinkVault SQLite backup every six hours
+
+[Timer]
+OnCalendar=*-*-* 03,09,15,21:00:00
+Persistent=true
+Unit=linkvault-backup.service
+
+[Install]
+WantedBy=timers.target

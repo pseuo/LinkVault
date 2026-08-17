@@ -1,0 +1,2 @@
+{"time":"2099-01-01T00:00:00Z","status":200,"bytes_sent":100,"encoding":"gzip"}
+{"time":"2099-01-01T00:00:01Z","status":304,"bytes_sent":50,"encoding":""}

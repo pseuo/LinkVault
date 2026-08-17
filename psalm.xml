@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="7"
+    resolveFromConfigFile="true"
+    findUnusedCode="false"
+    findUnusedBaselineEntry="true"
+    allFunctionsGlobal="true"
+>
+    <projectFiles>
+        <directory name="app" />
+        <directory name="bin" />
+        <directory name="lib" />
+        <directory name="public" />
+        <ignoreFiles>
+            <directory name="templates" />
+        </ignoreFiles>
+    </projectFiles>
+</psalm>

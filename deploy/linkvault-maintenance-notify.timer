@@ -1,0 +1,11 @@
+[Unit]
+Description=Send the LinkVault maintenance summary daily
+
+[Timer]
+OnCalendar=*-*-* 08:00:00 UTC
+RandomizedDelaySec=20min
+Persistent=true
+Unit=linkvault-maintenance-notify.service
+
+[Install]
+WantedBy=timers.target

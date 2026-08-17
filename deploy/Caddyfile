@@ -1,0 +1,214 @@
+{
+    servers {
+        # Replace these with the exact direct IPs of any upstream proxies, and validate with
+        # bin/check-deployment-domains.php before reload.
+        trusted_proxies static 127.0.0.1 10.0.0.10
+        trusted_proxies_strict
+        timeouts {
+            read_header 5s
+            read_body 15s
+            idle 30s
+        }
+        max_header_size 16KB
+    }
+}
+
+# Keep this explicit allowlist synchronized with verified domains in LinkVault.
+s.example.com, go.example.com {
+    root * /var/www/linkvault/public
+    encode zstd gzip
+    # Do not retain a generic access log: it would duplicate analytics with a broader privacy scope.
+    log {
+        output discard
+    }
+    log endpoint_access {
+        output file /var/log/caddy/linkvault-endpoints.log {
+            roll_size 10MiB
+            roll_keep 30
+            roll_keep_for 720h
+        }
+        format filter {
+            wrap json
+            fields {
+                request>remote_ip delete
+                request>client_ip delete
+                request>uri regexp \?.*$ ""
+                request>headers delete
+            }
+        }
+    }
+    log analytics_access {
+        output file /var/log/linkvault/caddy-linkvault-analytics.log {
+            roll_disabled
+        }
+        format filter {
+            wrap json
+            fields {
+                request>remote_ip delete
+                request>client_ip delete
+                request>uri regexp \?.*$ ""
+                request>headers>Cookie delete
+                request>headers>Authorization delete
+                request>headers>X-Forwarded-For delete
+                request>headers>X-Real-Ip delete
+                request>headers>Forwarded delete
+                request>headers>Cf-Connecting-Ip delete
+                request>headers>True-Client-Ip delete
+                request>headers>Referer regexp ^(https?://[^/?#]+).*$ ${1}
+            }
+        }
+    }
+
+    @monitoredEndpoints path /api/* /readyz /healthz
+    log_name @monitoredEndpoints endpoint_access
+
+    @analyticsRedirect {
+        method GET HEAD
+        path_regexp analyticsRedirect ^/[A-Za-z0-9_-]{3,64}$
+    }
+    @analyticsConfirmation {
+        method POST
+        path_regexp analyticsConfirmation ^/[A-Za-z0-9_-]{3,64}/confirm$
+    }
+    log_name @analyticsRedirect analytics_access
+    log_name @analyticsConfirmation analytics_access
+
+    # Requires a Caddy build with github.com/mholt/caddy-ratelimit.
+    rate_limit {
+        zone login_per_client {
+            match {
+                method POST
+                path /login
+            }
+            key {client_ip}
+            events 6
+            window 1m
+            ipv6_prefix 64
+        }
+        zone login_global {
+            match {
+                method POST
+                path /login
+            }
+            key login
+            events 30
+            window 1m
+        }
+        zone unlock_per_client {
+            match {
+                method POST
+                path_regexp unlockPerClient ^/[A-Za-z0-9_-]{3,64}/unlock$
+            }
+            key {client_ip}
+            events 10
+            window 1m
+            ipv6_prefix 64
+        }
+        zone unlock_global {
+            match {
+                method POST
+                path_regexp unlockGlobal ^/[A-Za-z0-9_-]{3,64}/unlock$
+            }
+            key link_unlock
+            events 100
+            window 1m
+        }
+        zone redirect_per_client {
+            match {
+                method GET HEAD
+                path_regexp redirectPerClient ^/[A-Za-z0-9_-]{3,64}$
+            }
+            key {client_ip}
+            events 20
+            window 1s
+            ipv6_prefix 64
+        }
+        zone redirect_global {
+            match {
+                method GET HEAD
+                path_regexp redirectGlobal ^/[A-Za-z0-9_-]{3,64}$
+            }
+            key redirect
+            events 200
+            window 1s
+        }
+        zone api_per_client {
+            match {
+                path /api/*
+            }
+            key {client_ip}
+            events 30
+            window 1m
+            ipv6_prefix 64
+        }
+        zone api_global {
+            match {
+                path /api/*
+            }
+            key linkvault_api
+            events 300
+            window 1m
+        }
+        zone readiness_per_client {
+            match {
+                method GET HEAD
+                path /readyz
+            }
+            key {client_ip}
+            events 60
+            window 1m
+            ipv6_prefix 64
+        }
+        zone readiness_global {
+            match {
+                method GET HEAD
+                path /readyz
+            }
+            key readiness
+            events 600
+            window 1m
+        }
+        zone health_per_client {
+            match {
+                method GET HEAD
+                path /healthz
+            }
+            key {client_ip}
+            events 30
+            window 1m
+            ipv6_prefix 64
+        }
+        zone health_global {
+            match {
+                method GET HEAD
+                path /healthz
+            }
+            key operational_health
+            events 300
+            window 1m
+        }
+    }
+
+    route {
+        @fingerprintedAssets path_regexp fingerprintedAsset ^/assets/(fonts/)?[A-Za-z0-9_.-]+\.[0-9a-f]{12}\.(css|js|woff2|svg)$
+        header @fingerprintedAssets Cache-Control "public, max-age=31536000, immutable"
+
+        @sourceAssets path_regexp sourceAsset ^/assets/(app\.css|app\.js|error\.css|icon\.svg|qrcode\.min\.js|fonts/[A-Za-z0-9_-]+\.woff2)$
+        header @sourceAssets Cache-Control "public, max-age=3600, must-revalidate"
+
+        @dynamic not path /assets/*
+        header @dynamic Cache-Control "no-store"
+
+        @hidden path_regexp hidden (^|/)\.
+        respond @hidden 404
+
+        @otherPhp {
+            path_regexp phpPath (?i).*\.php(?:/|$)
+            not path /index.php
+        }
+        respond @otherPhp 404
+
+        php_fastcgi unix//run/php/php8.5-fpm-linkvault.sock
+        file_server
+    }
+}

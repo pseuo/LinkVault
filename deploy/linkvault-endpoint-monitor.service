@@ -1,0 +1,18 @@
+[Unit]
+Description=Check LinkVault API and health endpoints through the public proxy
+Wants=network-online.target
+After=network-online.target
+OnFailure=linkvault-notify@%n.service
+
+[Service]
+Type=oneshot
+User=www-data
+WorkingDirectory=/var/www/linkvault
+EnvironmentFile=-/etc/linkvault/linkvault.env
+ExecStartPre=/usr/bin/php /var/www/linkvault/bin/seed-canary.php
+ExecStart=/usr/bin/php /var/www/linkvault/bin/check-http-endpoints.php
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/linkvault

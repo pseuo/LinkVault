@@ -1,0 +1,15 @@
+[linkvault-nginx]
+enabled = false
+filter = linkvault-nginx
+logpath = /var/log/nginx/linkvault-security.log
+findtime = 10m
+maxretry = 5
+bantime = 1h
+
+[linkvault-caddy]
+enabled = false
+filter = linkvault-caddy
+logpath = /var/log/caddy/linkvault-access.log
+findtime = 10m
+maxretry = 5
+bantime = 1h

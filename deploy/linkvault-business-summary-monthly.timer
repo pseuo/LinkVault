@@ -1,0 +1,11 @@
+[Unit]
+Description=Send the LinkVault monthly business summary
+
+[Timer]
+OnCalendar=*-*-01 08:20:00 UTC
+RandomizedDelaySec=20min
+Persistent=true
+Unit=linkvault-business-summary-monthly.service
+
+[Install]
+WantedBy=timers.target

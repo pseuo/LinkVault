@@ -1,0 +1,317 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LinkVault API",
+    "version": "2.0.0",
+    "description": "Scoped link lifecycle API. Access analytics are anonymous aggregates, not UV."
+  },
+  "servers": [{"url": "https://s.example.com"}],
+  "paths": {
+    "/api/shorten": {
+      "post": {
+        "operationId": "createLink",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/IdempotencyKey"}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ShortenRequest"}}}
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/ShortenSuccess"},
+          "201": {"$ref": "#/components/responses/ShortenSuccess"},
+          "400": {"$ref": "#/components/responses/Error"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "409": {"$ref": "#/components/responses/Error"},
+          "413": {"$ref": "#/components/responses/Error"},
+          "415": {"$ref": "#/components/responses/Error"},
+          "422": {"$ref": "#/components/responses/Error"},
+          "429": {"$ref": "#/components/responses/RateLimited"},
+          "503": {"$ref": "#/components/responses/Error"}
+        }
+      }
+    },
+    "/api/links": {
+      "get": {
+        "operationId": "listLinks",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1, "default": 1}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 50}},
+          {"name": "q", "in": "query", "schema": {"type": "string", "maxLength": 200}},
+          {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["all", "active", "inactive", "scheduled", "expired", "exhausted"]}},
+          {"name": "tag", "in": "query", "schema": {"type": "string", "maxLength": 24}},
+          {"name": "favorite", "in": "query", "schema": {"type": "string", "enum": ["0", "1"]}}
+        ],
+        "responses": {
+          "200": {"description": "Paginated links.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LinkListResponse"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "422": {"$ref": "#/components/responses/Error"}
+        }
+      }
+    },
+    "/api/links/{id}": {
+      "parameters": [{"$ref": "#/components/parameters/LinkId"}],
+      "get": {
+        "operationId": "getLink",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Link.", "headers": {"ETag": {"$ref": "#/components/headers/ETag"}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LinkResponse"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "404": {"$ref": "#/components/responses/Error"}
+        }
+      },
+      "patch": {
+        "operationId": "updateLink",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/IfMatch"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LinkPatch"}}}},
+        "responses": {
+          "204": {"description": "Updated.", "headers": {"ETag": {"$ref": "#/components/headers/ETag"}}},
+          "400": {"$ref": "#/components/responses/Error"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "404": {"$ref": "#/components/responses/Error"},
+          "409": {"$ref": "#/components/responses/Error"},
+          "412": {"$ref": "#/components/responses/Error"},
+          "413": {"$ref": "#/components/responses/Error"},
+          "415": {"$ref": "#/components/responses/Error"},
+          "422": {"$ref": "#/components/responses/Error"},
+          "428": {"$ref": "#/components/responses/Error"},
+          "429": {"$ref": "#/components/responses/RateLimited"},
+          "503": {"$ref": "#/components/responses/Error"}
+        }
+      },
+      "delete": {
+        "operationId": "deleteLink",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/IfMatch"}],
+        "responses": {
+          "204": {"description": "Moved to the recycle bin."},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "404": {"$ref": "#/components/responses/Error"},
+          "412": {"$ref": "#/components/responses/Error"},
+          "428": {"$ref": "#/components/responses/Error"}
+        }
+      }
+    },
+    "/api/links/{id}/disable": {
+      "post": {
+        "operationId": "disableLink",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"$ref": "#/components/parameters/LinkId"},
+          {"$ref": "#/components/parameters/IfMatch"}
+        ],
+        "responses": {
+          "204": {"description": "Disabled or already disabled.", "headers": {"ETag": {"$ref": "#/components/headers/ETag"}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "404": {"$ref": "#/components/responses/Error"},
+          "412": {"$ref": "#/components/responses/Error"},
+          "428": {"$ref": "#/components/responses/Error"}
+        }
+      }
+    },
+    "/api/conversions": {
+      "post": {
+        "operationId": "recordConversion",
+        "description": "Requires conversions:write. Sign HMAC-SHA256(timestamp + '.' + idempotencyKey + '.' + rawBody) with the bearer token.",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"$ref": "#/components/parameters/IdempotencyKey"},
+          {"name": "X-LinkVault-Timestamp", "in": "header", "required": true, "schema": {"type": "string", "pattern": "^[0-9]+$"}},
+          {"name": "X-LinkVault-Signature", "in": "header", "required": true, "schema": {"type": "string", "pattern": "^sha256=[a-f0-9]{64}$"}}
+        ],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {
+          "type": "object", "additionalProperties": false,
+          "required": ["event_id", "event", "link_id", "occurred_at"],
+          "properties": {
+            "event_id": {"type": "string", "minLength": 8, "maxLength": 128},
+            "event": {"type": "string", "minLength": 1, "maxLength": 80},
+            "link_id": {"type": "integer", "minimum": 1},
+            "occurred_at": {"type": "string", "format": "date-time"},
+            "value_minor": {"type": "integer", "minimum": 0},
+            "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+            "metadata": {"type": "object"}
+          }
+        }}}},
+        "responses": {
+          "200": {"description": "Idempotent replay."},
+          "201": {"description": "Conversion event recorded."},
+          "400": {"$ref": "#/components/responses/Error"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/InsufficientScope"},
+          "409": {"$ref": "#/components/responses/Error"},
+          "415": {"$ref": "#/components/responses/Error"},
+          "422": {"$ref": "#/components/responses/Error"},
+          "429": {"$ref": "#/components/responses/RateLimited"}
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Managed Tokens use links:create, links:read, links:write and links:delete. The environment Token is create-only."
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {"name": "Idempotency-Key", "in": "header", "schema": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._~:-]{0,127}$", "maxLength": 128}},
+      "LinkId": {"name": "id", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+      "IfMatch": {"name": "If-Match", "in": "header", "required": true, "schema": {"type": "string", "minLength": 3, "maxLength": 128}}
+    },
+    "headers": {
+      "ETag": {"description": "Opaque link version validator.", "schema": {"type": "string"}}
+    },
+    "schemas": {
+      "TagInput": {
+        "oneOf": [
+          {"type": "string", "maxLength": 260},
+          {"type": "array", "maxItems": 10, "items": {"type": "string", "minLength": 1, "maxLength": 24}}
+        ]
+      },
+      "ShortenRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url"],
+        "properties": {
+          "url": {"type": "string", "format": "uri", "maxLength": 2048, "pattern": "^https?://"},
+          "title": {"type": "string", "maxLength": 120},
+          "slug": {"type": "string", "pattern": "^[A-Za-z0-9_-]{3,64}$"},
+          "domain": {"type": "string", "format": "hostname"},
+          "tags": {
+            "oneOf": [
+              {"type": "string", "maxLength": 260},
+              {"type": "array", "maxItems": 10, "items": {"type": "string", "minLength": 1, "maxLength": 24}}
+            ]
+          },
+          "expires_at": {"type": "string", "format": "date-time"},
+          "starts_at": {"type": "string", "format": "date-time"},
+          "max_clicks": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+          "one_time": {"type": "boolean"},
+          "one_time_mode": {"type": "string", "enum": ["immediate", "confirm"]},
+          "favorite": {"type": "boolean"},
+          "campaign_name": {"type": "string", "maxLength": 100},
+          "source": {"type": "string", "maxLength": 100},
+          "medium": {"type": "string", "maxLength": 100},
+          "content": {"type": "string", "maxLength": 100},
+          "force": {"type": "boolean"}
+        }
+      },
+      "LinkPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "url": {"type": "string", "format": "uri", "maxLength": 2048, "pattern": "^https?://"},
+          "title": {"type": "string", "maxLength": 120},
+          "tags": {"$ref": "#/components/schemas/TagInput"},
+          "expires_at": {"type": ["string", "null"], "format": "date-time"},
+          "starts_at": {"type": ["string", "null"], "format": "date-time"},
+          "max_clicks": {"type": ["integer", "null"], "minimum": 1},
+          "favorite": {"type": "boolean"},
+          "one_time": {"type": "boolean"},
+          "one_time_mode": {"type": "string", "enum": ["immediate", "confirm"]},
+          "campaign_name": {"type": "string", "maxLength": 100},
+          "source": {"type": "string", "maxLength": 100},
+          "medium": {"type": "string", "maxLength": 100},
+          "content": {"type": "string", "maxLength": 100},
+          "invalid_message": {"type": "string", "maxLength": 500},
+          "fallback_url": {"type": ["string", "null"], "format": "uri", "maxLength": 2048, "pattern": "^https?://"}
+        }
+      },
+      "Link": {
+        "type": "object",
+        "required": ["id", "slug", "short_url", "url", "status", "etag"],
+        "properties": {
+          "id": {"type": "integer"},
+          "slug": {"type": "string"},
+          "short_url": {"type": "string", "format": "uri"},
+          "domain": {"type": ["string", "null"]},
+          "url": {"type": "string", "format": "uri"},
+          "title": {"type": "string"},
+          "status": {"type": "string"},
+          "active": {"type": "boolean"},
+          "favorite": {"type": "boolean"},
+          "clicks": {"type": "integer"},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "expires_at": {"type": ["string", "null"]},
+          "starts_at": {"type": ["string", "null"]},
+          "max_clicks": {"type": ["integer", "null"]},
+          "one_time": {"type": "boolean"},
+          "one_time_mode": {"type": "string"},
+          "campaign_name": {"type": "string"},
+          "source": {"type": "string"},
+          "medium": {"type": "string"},
+          "content": {"type": "string"},
+          "invalid_message": {"type": "string"},
+          "fallback_url": {"type": ["string", "null"], "format": "uri"},
+          "password_protected": {"type": "boolean"},
+          "password_reset_required": {"type": "boolean"},
+          "created_at": {"type": "string"},
+          "updated_at": {"type": "string"},
+            "last_accessed_at": {"type": ["string", "null"], "format": "date-time"},
+            "target_health_state": {"type": ["string", "null"]},
+            "target_health_reason": {"type": ["string", "null"]},
+            "target_health_checked_at": {"type": ["string", "null"], "format": "date-time"},
+            "etag": {"type": "string"}
+        }
+      },
+      "LinkResponse": {"type": "object", "required": ["data"], "properties": {"data": {"$ref": "#/components/schemas/Link"}}},
+      "LinkListResponse": {
+        "type": "object",
+        "required": ["data", "pagination"],
+        "properties": {
+          "data": {"type": "array", "items": {"$ref": "#/components/schemas/Link"}},
+          "pagination": {
+            "type": "object",
+            "required": ["page", "per_page", "total", "total_pages"],
+            "properties": {
+              "page": {"type": "integer"},
+              "per_page": {"type": "integer"},
+              "total": {"type": "integer"},
+              "total_pages": {"type": "integer"}
+            }
+          }
+        }
+      },
+      "ShortenResponse": {
+        "type": "object",
+        "required": ["short_url", "id", "duplicate"],
+        "properties": {
+          "short_url": {"type": "string", "format": "uri"},
+          "id": {"type": "integer"},
+          "duplicate": {"type": "boolean"}
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message", "request_id"],
+            "properties": {
+              "code": {"type": "string", "enum": ["api_token_not_configured", "invalid_token", "insufficient_scope", "invalid_json", "invalid_parameters", "invalid_idempotency_key", "idempotency_conflict", "slug_exists", "not_found", "precondition_required", "precondition_failed", "link_requires_password_reset", "unsupported_media_type", "request_too_large", "method_not_allowed", "misdirected_request", "rate_limited", "service_unavailable", "internal_error"]},
+              "message": {"type": "string"},
+              "request_id": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "ShortenSuccess": {"description": "Created or reused.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ShortenResponse"}}}},
+      "Error": {"description": "Request error.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+      "Unauthorized": {"description": "Bearer authentication failed.", "headers": {"WWW-Authenticate": {"schema": {"type": "string"}}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+      "InsufficientScope": {"description": "Token lacks the required scope.", "headers": {"WWW-Authenticate": {"schema": {"type": "string"}}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+      "RateLimited": {"description": "Token quota exceeded.", "headers": {"Retry-After": {"schema": {"type": "integer"}}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+    }
+  }
+}

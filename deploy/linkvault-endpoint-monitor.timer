@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodically check LinkVault proxy endpoints
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Persistent=true
+Unit=linkvault-endpoint-monitor.service
+
+[Install]
+WantedBy=timers.target

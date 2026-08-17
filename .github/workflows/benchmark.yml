@@ -1,0 +1,29 @@
+name: SQLite Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      sizes:
+        description: Comma-separated link counts (maximum 1000000)
+        required: true
+        default: '10000,100000,1000000'
+      iterations:
+        description: Measured iterations per operation
+        required: true
+        default: '7'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite
+      - run: php tests/performance/benchmark.php --sizes=${{ inputs.sizes }} --iterations=${{ inputs.iterations }} --output=benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sqlite-benchmark-${{ github.run_id }}
+          path: benchmark.json
+          retention-days: 30

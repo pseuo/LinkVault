@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" data-title-key="appTitle">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Save to LinkVault</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="brand-mark" aria-hidden="true">LV</div>
+      <div>
+        <h1 data-i18n="appTitle">Save to LinkVault</h1>
+        <p id="service-name" data-i18n="checkingConfiguration">Checking configuration...</p>
+      </div>
+      <select id="language" class="language-select" data-language-select data-i18n-aria-label="language" aria-label="Language"><option value="en">EN</option><option value="zh">中文</option></select>
+      <button id="open-options" class="quiet-button" type="button" data-i18n-title="settings" title="Settings" data-i18n="settings">Settings</button>
+    </header>
+
+    <div class="toolbar" id="tools" hidden>
+      <button id="show-save" class="quiet-button" type="button" data-i18n="save">Save</button>
+      <button id="show-search" class="quiet-button" type="button" data-i18n="findLinks">Find links</button>
+      <button id="sync-queue" class="quiet-button" type="button"><span data-i18n="queue">Queue</span> <span id="queue-count">0</span></button>
+    </div>
+
+    <form id="save-form" hidden>
+      <label for="title" data-i18n="title">Title</label>
+      <input id="title" name="title" type="text" maxlength="120" autocomplete="off">
+
+      <label for="url" data-i18n="url">URL</label>
+      <input id="url" name="url" type="url" required autocomplete="off" spellcheck="false">
+
+      <label for="tags"><span data-i18n="tags">Tags</span> <span data-i18n="onePerLine">one per line</span></label>
+      <textarea id="tags" name="tags" rows="3" spellcheck="false"></textarea>
+
+      <div class="behavior" id="duplicate-behavior"></div>
+      <button id="advanced-toggle" class="text-button" type="button" aria-expanded="false" data-i18n="advancedOptions">Advanced options</button>
+      <fieldset id="advanced-fields" hidden>
+        <label for="slug" data-i18n="customShortCode">Custom short code</label>
+        <input id="slug" name="slug" type="text" pattern="[A-Za-z0-9_-]{3,64}" maxlength="64" autocomplete="off">
+        <div class="field-grid">
+          <label for="starts-at"><span data-i18n="startsAt">Starts at</span><input id="starts-at" name="starts-at" type="datetime-local"></label>
+          <label for="expires-at"><span data-i18n="expiresAt">Expires at</span><input id="expires-at" name="expires-at" type="datetime-local"></label>
+        </div>
+        <label for="max-clicks" data-i18n="clickLimit">Click limit</label>
+        <input id="max-clicks" name="max-clicks" type="number" min="1" step="1">
+        <label class="check-row" for="one-time"><input id="one-time" type="checkbox"><span data-i18n="oneTimeLink">One-time link</span></label>
+        <label class="check-row" for="one-time-confirm"><input id="one-time-confirm" type="checkbox"><span data-i18n="visitorConfirmation">Require visitor confirmation</span></label>
+        <label class="check-row" for="favorite"><input id="favorite" type="checkbox"><span data-i18n="addFavorites">Add to favorites</span></label>
+        <div class="field-grid">
+          <label for="campaign-name"><span data-i18n="campaign">Campaign</span><input id="campaign-name" type="text" maxlength="100"></label>
+          <label for="source"><span data-i18n="source">Source</span><input id="source" type="text" maxlength="100"></label>
+          <label for="medium"><span data-i18n="medium">Medium</span><input id="medium" type="text" maxlength="100"></label>
+          <label for="content"><span data-i18n="content">Content</span><input id="content" type="text" maxlength="100"></label>
+        </div>
+      </fieldset>
+      <button id="save-button" class="primary-button" type="submit" data-i18n="saveLink">Save link</button>
+    </form>
+
+    <section id="search-panel" hidden>
+      <label for="search" data-i18n="searchSavedLinks">Search saved links</label>
+      <input id="search" type="search" placeholder="Title, tag, code, or URL" data-i18n-placeholder="searchPlaceholder" autocomplete="off">
+      <div id="search-results" class="search-results" aria-live="polite"></div>
+    </section>
+
+    <section id="result" class="result" hidden aria-live="polite">
+      <p id="result-message"></p>
+      <a id="short-url" target="_blank" rel="noreferrer"></a>
+      <button id="copy-button" class="secondary-button" type="button" data-i18n="copyShortUrl">Copy short URL</button>
+      <p id="link-health" class="health"></p>
+    </section>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </main>
+  <script src="i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

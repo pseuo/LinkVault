@@ -1,0 +1,17 @@
+[Unit]
+Description=Check LinkVault end-to-end backup freshness
+After=local-fs.target
+OnFailure=linkvault-notify@%n.service
+
+[Service]
+Type=oneshot
+User=linkvault-backup
+Group=linkvault-backup
+WorkingDirectory=/var/www/linkvault
+Environment=LINKVAULT_BACKUP_DIR=/var/backups/linkvault
+Environment=LINKVAULT_BACKUP_STATUS_DIR=/var/lib/linkvault-backup-status
+Environment=LINKVAULT_BACKUP_REMOTE_REQUIRED=1
+EnvironmentFile=-/etc/linkvault/linkvault.env
+ExecStart=/usr/bin/php /var/www/linkvault/bin/check-backup-age.php
+NoNewPrivileges=true
+PrivateTmp=true

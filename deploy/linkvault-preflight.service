@@ -1,0 +1,16 @@
+[Unit]
+Description=Validate LinkVault production readiness
+Requires=linkvault-migrate.service
+After=local-fs.target linkvault-migrate.service
+
+[Service]
+Type=oneshot
+User=www-data
+WorkingDirectory=/var/www/linkvault
+EnvironmentFile=/etc/linkvault/linkvault.env
+LoadCredential=restore-age-identity:/etc/linkvault/restore-age-identity
+LoadCredential=restore-rclone-config:/etc/linkvault/restore-rclone.conf
+Environment=LINKVAULT_RESTORE_AGE_IDENTITY=%d/restore-age-identity
+Environment=LINKVAULT_RESTORE_RCLONE_CONFIG=%d/restore-rclone-config
+UMask=0027
+ExecStart=/usr/bin/php /var/www/linkvault/bin/preflight.php

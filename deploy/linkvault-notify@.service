@@ -1,0 +1,11 @@
+[Unit]
+Description=Send alert for failed LinkVault unit %i
+
+[Service]
+Type=oneshot
+User=www-data
+WorkingDirectory=/var/www/linkvault
+EnvironmentFile=-/etc/linkvault/linkvault.env
+ExecStart=/usr/bin/php /var/www/linkvault/bin/notify-failure.php %i
+NoNewPrivileges=true
+PrivateTmp=true

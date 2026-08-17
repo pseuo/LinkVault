@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">链匣 LinkVault</title>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#1e3a5f"/>
+  <path d="M27 21h-5a11 11 0 0 0 0 22h5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M37 21h5a11 11 0 0 1 0 22h-5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M23 32h18" fill="none" stroke="#52d6a3" stroke-width="5" stroke-linecap="round"/>
+</svg>

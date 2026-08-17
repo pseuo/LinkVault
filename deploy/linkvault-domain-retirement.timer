@@ -1,0 +1,12 @@
+[Unit]
+Description=Process LinkVault short-domain retirement batches every minute
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+RandomizedDelaySec=10s
+Persistent=true
+Unit=linkvault-domain-retirement.service
+
+[Install]
+WantedBy=timers.target
