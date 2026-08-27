@@ -8,10 +8,12 @@ This project follows Keep a Changelog and Semantic Versioning. Release notes are
 
 - Deployment domain inventory validation and generation for Caddy and Nginx.
 - Production governance, SLO, change-control, compatibility, ADR, and logging-policy records.
+- A complete Simplified Chinese README covering installation, deployment, security, analytics, backups, and recovery.
 
 ### Changed
 
 - Caddy no longer retains a broad generic access log; endpoint logs exclude client addresses, headers, and query strings.
+- README documentation now includes language navigation for the Simplified Chinese guide.
 
 ## [2.0.0] - 2026-08-05
 
