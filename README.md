@@ -1,6 +1,6 @@
 # LinkVault
 
-Language: [English](README.md) | [简体中文](README.zh-CN.md)
+Language: [English](README.md) | [Chinese](README.zh-CN.md)
 
 Your links, in your control.
 
@@ -262,7 +262,7 @@ Conversion events use the separate `conversions:write` scope. `POST /api/convers
 
 `browser-extension/` can be installed from the Chromium extension management page using “Load unpacked”. The Token is stored only in the browser extension’s local storage; creating a Token for the extension with only `links:create`, a short expiration, an independent quota, and an accurate CIDR is recommended.
 
-Before publishing to the Chrome Web Store, configure the monitored `LINKVAULT_BROWSER_EXTENSION_PRIVACY_CONTACT` and submit the public HTTPS address `https://<你的服务域名>/browser-extension-privacy` on the store privacy page. Link search and health status also require adding the `links:read` scope to the extension Token.
+Before publishing to the Chrome Web Store, configure the monitored `LINKVAULT_BROWSER_EXTENSION_PRIVACY_CONTACT` and submit the public HTTPS address `https://<your-service-domain>/browser-extension-privacy` on the store privacy page. Link search and health status also require adding the `links:read` scope to the extension Token.
 
 The public report entry point is `GET/POST /report`, with a default limit of 5 per source per hour. The source address is used only for the daily hashed quota and report deduplication and is not written to report records. Administrators can review, disable, or restore links, maintain the domain blacklist, and run a single-link scan in the “Trust & Safety” workspace; scheduled batch scans can be run with `php bin/scan-link-risks.php`.
 
