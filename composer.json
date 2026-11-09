@@ -5,7 +5,7 @@
     "type": "project",
     "require-dev": {
         "phpstan/phpstan": "^2.1",
-        "vimeo/psalm": "^6.0"
+        "vimeo/psalm": "^7.0"
     },
     "scripts": {
         "build:assets": "php bin/build-assets.php",
